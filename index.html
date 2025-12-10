@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thị Trấn eSchool - Học Tập Sáng Tạo</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <div id="login-overlay" class="overlay">
+        <div class="login-box">
+            <h2>Chào mừng đến Thị trấn eSchool</h2>
+            <p>Vui lòng chọn vai trò để nhập cảnh:</p>
+            <button onclick="login('student')" class="btn-role student">🧑‍🎓 Công dân Học sinh</button>
+            <button onclick="login('teacher')" class="btn-role teacher">👩‍🏫 Cố vấn Giáo viên</button>
+        </div>
+    </div>
+
+    <div id="app-container" style="display: none;">
+        <header>
+            <div class="logo">🏘️ Thị Trấn eSchool</div>
+            <div class="user-info">
+                <span id="user-greeting">Xin chào!</span>
+                <button onclick="logout()" class="btn-logout">Đăng xuất</button>
+            </div>
+        </header>
+
+        <main id="town-map">
+            <h1 class="map-title">Bản Đồ Thị Trấn</h1>
+            <div class="map-grid">
+                <div class="zone math-town" onclick="enterZone('math')">
+                    <i class="fas fa-calculator"></i>
+                    <h3>Math Town</h3>
+                    <p>Khu Toán Học</p>
+                </div>
+                <div class="zone lit-house" onclick="enterZone('literature')">
+                    <i class="fas fa-book-open"></i>
+                    <h3>Literature House</h3>
+                    <p>Khu Văn Học</p>
+                </div>
+                <div class="zone english-spot" onclick="enterZone('english')">
+                    <i class="fas fa-language"></i>
+                    <h3>English Spot</h3>
+                    <p>Khu Anh Ngữ</p>
+                </div>
+                <div class="zone square" onclick="enterZone('square')">
+                    <i class="fas fa-users"></i>
+                    <h3>Academic Square</h3>
+                    <p>Quảng Trường Học Thuật</p>
+                </div>
+            </div>
+            <div class="club-hub" onclick="enterZone('club')">
+                <i class="fas fa-comments"></i>
+                <h3>Trung tâm giao lưu & Câu lạc bộ (Club Hub)</h3>
+            </div>
+        </main>
+
+        <section id="zone-content" class="hidden">
+            <button onclick="goBack()" class="btn-back">⬅ Quay lại bản đồ</button>
+            <h2 id="zone-title">Tiêu đề khu vực</h2>
+            
+            <div id="teacher-tools" class="hidden tool-box">
+                <h4>🛠️ Công cụ Cố vấn (Giáo viên)</h4>
+                <div id="teacher-actions"></div>
+            </div>
+
+            <div id="student-activities" class="activity-box">
+                <h4>🎮 Hoạt động Công dân (Học sinh)</h4>
+                <div id="zone-body"></div>
+            </div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
