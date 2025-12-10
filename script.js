@@ -1,23 +1,17 @@
 let currentUserRole = null; 
 
-// --- HỆ THỐNG ĐĂNG NHẬP ---
+// --- 1. HỆ THỐNG ĐĂNG NHẬP ---
 function login(role) {
     currentUserRole = role;
     document.getElementById('login-overlay').style.display = 'none';
     document.getElementById('app-container').style.display = 'block';
     
-    // Cập nhật lời chào
     const greeting = role === 'student' ? 'Xin chào, Công dân Học sinh!' : 'Xin chào, Cố vấn Giáo viên!';
     document.getElementById('user-greeting').innerText = greeting;
-    
-    // Nếu là giáo viên, hiện công cụ giáo viên
-    if (role === 'teacher') {
-         // Logic hiển thị cho giáo viên (nếu cần mở rộng sau này)
-    }
 }
 
 function logout() {
-    location.reload(); // Tải lại trang để đăng xuất
+    location.reload(); 
 }
 
 function goBack() {
@@ -31,45 +25,47 @@ function enterZone(zoneId) {
     renderZoneContent(zoneId);
 }
 
-// --- RENDER NỘI DUNG TỪNG KHU VỰC ---
+// --- 2. RENDER GIAO DIỆN TỪNG KHU VỰC ---
 function renderZoneContent(zoneId) {
     const container = document.getElementById('tool-container');
     const title = document.getElementById('zone-title');
 
     if (zoneId === 'math') {
+        // Giao diện Toán
         title.innerText = "Math Town - Công Cụ Đồ Thị";
         container.innerHTML = `
             <div class="input-group">
-                <input type="text" id="math-formula" placeholder="Nhập hàm số (ví dụ: x^2, sin(x), x+1)..." value="x^2">
+                <input type="text" id="math-formula" placeholder="Nhập hàm số (vd: x^2, sin(x))..." value="x^2">
                 <button class="post-btn" onclick="drawGraph()" style="background:#ff9800;">Vẽ Đồ Thị</button>
             </div>
             <div id="math-plot"></div>
-            <p><i>Mẹo: Hãy thử nhập 'sin(x)', 'x^3', hoặc 'x*x - 4'</i></p>
+            <p><i>Mẹo: Thử nhập 'sin(x)', 'x^3', hoặc 'x*x - 4'</i></p>
         `;
-        // Đợi 0.5s để thư viện tải xong rồi mới vẽ
         setTimeout(drawGraph, 500); 
 
     } else if (zoneId === 'english') {
+        // Giao diện Tiếng Anh
         title.innerText = "English Spot - Mini Quiz";
         container.innerHTML = `
             <div id="quiz-box">
-                <h3 id="q-text">Loading question...</h3>
+                <h3 id="q-text">Đang tải câu hỏi...</h3>
                 <div id="q-options"></div>
                 <p id="q-result" style="margin-top:10px; font-weight:bold;"></p>
-                <button class="post-btn" onclick="nextQuestion()" style="margin-top:10px; background:#4caf50;">Câu tiếp theo</button>
+                <button class="post-btn" onclick="nextQuestion()" style="background:#4caf50;">Câu tiếp theo</button>
             </div>
         `;
         loadQuestion();
 
     } else if (zoneId === 'literature') {
+        // Giao diện Văn Học
         title.innerText = "Literature House - AI Trợ Lý Viết Văn";
         container.innerHTML = `
-            <p>Nhập đoạn văn của bạn xuống dưới, AI sẽ giúp bạn tìm lỗi chính tả và gợi ý từ ngữ hay hơn:</p>
+            <p>Nhập đoạn văn để kiểm tra lỗi chính tả:</p>
             <div class="editor-box">
-                <textarea id="lit-input" placeholder="Ví dụ: Hôm lay trời dất đẹp, tôi rất là thích đi chơi..."></textarea>
-                <button class="post-btn" onclick="analyzeText()" style="background:#2196f3; margin-top:10px;">✨ Phân tích bằng AI</button>
+                <textarea id="lit-input" placeholder="Ví dụ: Hôm lay trời dất đẹp..."></textarea>
+                <button class="post-btn" onclick="analyzeText()" style="background:#2196f3;">✨ Phân tích AI</button>
             </div>
-            <div id="ai-feedback">Kết quả phân tích sẽ hiện ở đây...</div>
+            <div id="ai-feedback"></div>
         `;
     } else {
         title.innerText = "Khu vực đang xây dựng";
@@ -77,7 +73,7 @@ function renderZoneContent(zoneId) {
     }
 }
 
-// --- 1. TÍNH NĂNG TOÁN HỌC (VẼ ĐỒ THỊ) ---
+// --- 3. CHỨC NĂNG TOÁN HỌC ---
 function drawGraph() {
     const formula = document.getElementById('math-formula').value;
     try {
@@ -87,28 +83,25 @@ function drawGraph() {
             height: 400,
             yAxis: { domain: [-5, 5] },
             grid: true,
-            data: [{
-                fn: formula,
-                color: '#ff9800'
-            }]
+            data: [{ fn: formula, color: '#ff9800' }]
         });
-    } catch (e) {
+    } catch (e) { 
         console.error(e);
-        alert("Công thức chưa đúng hoặc thư viện chưa tải xong. Hãy thử lại!");
+        alert("Công thức chưa đúng. Hãy thử lại!");
     }
 }
 
-// --- 2. TÍNH NĂNG TIẾNG ANH (TRẮC NGHIỆM) ---
+// --- 4. CHỨC NĂNG TIẾNG ANH ---
 const questions = [
-    { q: "Choose the synonym of 'Happy'", options: ["Sad", "Joyful", "Angry", "Tired"], ans: 1 },
+    { q: "Từ đồng nghĩa với 'Happy'?", options: ["Sad", "Joyful", "Angry", "Tired"], ans: 1 },
     { q: "I ______ to school everyday.", options: ["go", "goes", "going", "went"], ans: 0 },
-    { q: "What is the past tense of 'Eat'?", options: ["Eated", "Ate", "Eaten", "Eating"], ans: 1 }
+    { q: "Quá khứ của 'Eat'?", options: ["Eated", "Ate", "Eaten", "Eating"], ans: 1 }
 ];
 let currentQ = 0;
 
 function loadQuestion() {
     const qData = questions[currentQ];
-    document.getElementById('q-text').innerText = `Question ${currentQ + 1}: ${qData.q}`;
+    document.getElementById('q-text').innerText = `Câu ${currentQ + 1}: ${qData.q}`;
     const optsDiv = document.getElementById('q-options');
     optsDiv.innerHTML = "";
     document.getElementById('q-result').innerText = "";
@@ -125,17 +118,16 @@ function loadQuestion() {
 function checkAnswer(index, btnElement) {
     const correctIndex = questions[currentQ].ans;
     const allBtns = document.querySelectorAll('.quiz-option');
-    
     allBtns.forEach(b => b.disabled = true);
 
     if (index === correctIndex) {
         btnElement.classList.add('correct');
-        document.getElementById('q-result').innerText = "🎉 Chính xác! Bạn rất giỏi.";
+        document.getElementById('q-result').innerText = "🎉 Chính xác!";
         document.getElementById('q-result').style.color = "green";
     } else {
         btnElement.classList.add('wrong');
         allBtns[correctIndex].classList.add('correct'); 
-        document.getElementById('q-result').innerText = "❌ Sai rồi. Hãy cố gắng nhé!";
+        document.getElementById('q-result').innerText = "❌ Sai rồi!";
         document.getElementById('q-result').style.color = "red";
     }
 }
@@ -146,48 +138,33 @@ function nextQuestion() {
     loadQuestion();
 }
 
-// --- 3. TÍNH NĂNG VĂN HỌC (AI SIMULATION) ---
+// --- 5. CHỨC NĂNG VĂN HỌC (AI) ---
 function analyzeText() {
     let text = document.getElementById('lit-input').value;
     const feedbackBox = document.getElementById('ai-feedback');
     
-    if (!text.trim()) {
-        feedbackBox.innerHTML = "Vui lòng nhập văn bản để phân tích.";
-        return;
-    }
+    if (!text.trim()) { feedbackBox.innerHTML = "Hãy nhập văn bản."; return; }
 
-    const spellingRules = [
-        { wrong: /hôm lay/gi, fix: "hôm nay", type: "error" },
-        { wrong: /dất đẹp/gi, fix: "rất đẹp", type: "error" },
-        { wrong: /xắp xếp/gi, fix: "sắp xếp", type: "error" }
-    ];
-
-    const styleRules = [
-        { wrong: /rất là/gi, fix: "vô cùng/thực sự", type: "suggestion" },
-        { wrong: /thích/gi, fix: "yêu thích/hứng thú", type: "suggestion" },
-        { wrong: /bảo là/gi, fix: "cho rằng/nhận định", type: "suggestion" }
+    // Luật sửa lỗi (Demo)
+    const rules = [
+        { wrong: /hôm lay/gi, fix: "hôm nay" },
+        { wrong: /dất đẹp/gi, fix: "rất đẹp" },
+        { wrong: /rất là/gi, fix: "vô cùng" },
+        { wrong: /xắp xếp/gi, fix: "sắp xếp" }
     ];
 
     let html = text;
-    let issuesFound = 0;
-
-    spellingRules.forEach(rule => {
+    let found = false;
+    rules.forEach(rule => {
         if (text.match(rule.wrong)) {
             html = html.replace(rule.wrong, `<span class="highlight-error" title="Sửa thành: ${rule.fix}">${rule.wrong.source.replace(/\\/g,'')}</span>`);
-            issuesFound++;
+            found = true;
         }
     });
 
-    styleRules.forEach(rule => {
-        if (text.match(rule.wrong)) {
-            html = html.replace(rule.wrong, `<span class="highlight-suggestion" title="Gợi ý: ${rule.fix}">${rule.wrong.source.replace(/\\/g,'')}</span>`);
-            issuesFound++;
-        }
-    });
-
-    if (issuesFound > 0) {
-        feedbackBox.innerHTML = `<h4>🔍 Kết quả phân tích AI:</h4><p style="font-size:18px; line-height:1.6;">${html}</p><br><small>(Di chuột vào từ được tô màu để xem gợi ý)</small>`;
+    if (found) {
+        feedbackBox.innerHTML = `<h4>Kết quả phân tích:</h4><p style="line-height:1.6; font-size:18px;">${html}</p><small>(Di chuột vào chữ màu đỏ để xem gợi ý sửa)</small>`;
     } else {
-        feedbackBox.innerHTML = "✅ Tuyệt vời! AI không tìm thấy lỗi nào đáng kể.";
+        feedbackBox.innerHTML = `<h4>Kết quả phân tích:</h4><p>Không tìm thấy lỗi sai cơ bản nào!</p>`;
     }
 }
