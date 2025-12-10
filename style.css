@@ -1,54 +1,66 @@
-/* Reset cơ bản */
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-
-body { background-color: #f0f4f8; color: #333; }
-
-/* Login */
-.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-.login-box { background: white; padding: 40px; border-radius: 15px; text-align: center; width: 400px; }
-.btn-role { display: block; width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.3s; }
-.student { background: #4CAF50; color: white; }
-.teacher { background: #2196F3; color: white; }
-
-/* Header */
-header { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-.logo { font-size: 24px; font-weight: bold; color: #ff6b6b; }
-.btn-logout { padding: 5px 15px; margin-left: 10px; cursor: pointer; }
-
-/* Map */
-#town-map { max-width: 1000px; margin: 40px auto; padding: 20px; text-align: center; }
-.map-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-.zone { padding: 40px; border-radius: 20px; color: white; cursor: pointer; transition: transform 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; }
-.zone:hover { transform: translateY(-5px); }
-.zone i { font-size: 40px; margin-bottom: 10px; }
-
-/* Màu nền các khu vực */
-.math-town { background: linear-gradient(135deg, #ffc107, #ff9800); }
-.lit-house { background: linear-gradient(135deg, #2196f3, #64b5f6); }
-.english-spot { background: linear-gradient(135deg, #4caf50, #81c784); }
-.square { background: linear-gradient(135deg, #e91e63, #f06292); }
-
-/* Chi tiết khu vực */
-#zone-content { max-width: 900px; margin: 30px auto; background: white; padding: 30px; border-radius: 15px; min-height: 400px; }
+/* Reset & Cơ bản */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+body { background-color: #f4f7f6; color: #333; }
 .hidden { display: none !important; }
-.btn-back { background: #ddd; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px; }
 
-/* CÔNG CỤ NÂNG CẤP */
-.post-btn { padding: 10px 20px; border: none; color: white; border-radius: 5px; cursor: pointer; margin-top: 10px; font-weight: bold; }
+/* Authentication (Đăng nhập/Đăng ký) */
+.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+.auth-box { background: white; padding: 30px; border-radius: 15px; width: 350px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+.auth-tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid #ddd; }
+.auth-tabs button { flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-weight: bold; color: #777; }
+.auth-tabs button.active { border-bottom: 3px solid #4CAF50; color: #4CAF50; }
+.auth-box input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; }
+.role-select { margin: 10px 0; display: flex; justify-content: space-around; }
+.btn-submit { width: 100%; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
 
-/* Toán học */
-#math-plot { width: 100%; height: 400px; background: white; margin: 20px 0; border: 1px solid #ddd; }
-.input-group { display: flex; gap: 10px; margin-bottom: 15px; }
-.input-group input { flex: 1; padding: 10px; border: 2px solid #ff9800; border-radius: 5px; }
+/* Header & User Info */
+header { background: white; padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.logo { font-size: 22px; font-weight: bold; color: #FF6B6B; }
+.user-panel { display: flex; align-items: center; gap: 10px; }
+#user-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #ddd; }
+.user-details { display: flex; flex-direction: column; align-items: flex-start; }
+#display-name { font-weight: bold; font-size: 14px; }
+.badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; color: white; margin-top: 2px; }
 
-/* Tiếng Anh */
-.quiz-option { display: block; width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; background: #fff; text-align: left; }
-.quiz-option:hover { background: #e8f5e9; }
-.quiz-option.correct { background: #c8e6c9; border-color: #4caf50; font-weight: bold; }
-.quiz-option.wrong { background: #ffcdd2; border-color: #f44336; }
+/* PHÂN BIỆT MÀU SẮC */
+.badge-student { background-color: #2196F3; } /* Xanh biển */
+.badge-teacher { background-color: #4CAF50; } /* Xanh lá */
 
-/* Văn học */
-.editor-box textarea { width: 100%; height: 150px; padding: 10px; border: 2px solid #2196f3; border-radius: 5px; font-size: 16px; }
-#ai-feedback { margin-top: 20px; padding: 15px; background: #f0f4c3; border-radius: 10px; min-height: 100px; }
-.highlight-error { background-color: #ffccbc; padding: 2px 5px; border-radius: 3px; font-weight: bold; cursor: help; }
-.highlight-suggestion { background-color: #fff9c4; padding: 2px 5px; border-radius: 3px; font-weight: bold; cursor: help; }
+/* Map System */
+#town-map { padding: 40px; text-align: center; max-width: 1000px; margin: 0 auto; }
+.map-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 20px; }
+.zone { padding: 30px; border-radius: 15px; color: white; cursor: pointer; transition: 0.3s; text-align: center; }
+.zone:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+.zone i { font-size: 40px; margin-bottom: 10px; }
+.math-town { background: linear-gradient(135deg, #FFC107, #FF9800); }
+.lit-house { background: linear-gradient(135deg, #2196F3, #64B5F6); }
+.english-spot { background: linear-gradient(135deg, #4CAF50, #81C784); }
+.square { background: linear-gradient(135deg, #E91E63, #F06292); }
+
+/* Workspace */
+#zone-content { max-width: 900px; margin: 20px auto; background: white; padding: 20px; border-radius: 10px; min-height: 500px; }
+.zone-header { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+.btn-back { border: none; background: #eee; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+
+/* Sub-menu bar */
+.sub-menu-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.sub-btn { padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 20px; cursor: pointer; transition: 0.2s; }
+.sub-btn:hover, .sub-btn.active { background: #333; color: white; border-color: #333; }
+
+/* Công cụ cụ thể */
+/* Toán */
+#geometry-canvas { border: 2px dashed #ccc; margin-top: 10px; background: #fff; cursor: crosshair; }
+.math-feedback { margin-top: 10px; padding: 10px; border-radius: 5px; font-weight: bold; }
+.correct { background: #d4edda; color: #155724; }
+.incorrect { background: #f8d7da; color: #721c24; }
+
+/* Chat (Quảng trường) */
+.chat-container { border: 1px solid #ddd; height: 400px; display: flex; flex-direction: column; border-radius: 10px; overflow: hidden; }
+.chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; }
+.chat-input-area { padding: 10px; background: white; border-top: 1px solid #ddd; display: flex; gap: 10px; align-items: center; }
+.chat-input-area input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
+.file-btn { cursor: pointer; font-size: 20px; color: #777; }
+.msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 10px; max-width: 70%; font-size: 14px; }
+.msg.my-msg { background: #DCF8C6; align-self: flex-end; margin-left: auto; }
+.msg.other-msg { background: #fff; border: 1px solid #ddd; }
+.msg-header { font-size: 11px; color: #888; margin-bottom: 2px; font-weight: bold; }
