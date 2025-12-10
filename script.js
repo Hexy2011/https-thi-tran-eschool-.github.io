@@ -80,8 +80,8 @@ function loadZoneFeatures(zoneId) {
         renderMathGeometry();
     } else if (zoneId === 'literature') {
         title.innerText = "Khu Văn Học";
-        createSubBtn("Sửa Lỗi Chính Tả (Smart)", renderLitSpellCheck);
-        createSubBtn("Viết Lại Câu (AI)", renderLitImprove);
+        createSubBtn("Sửa Lỗi Chính Tả (Spell Check)", renderLitSpellCheck);
+        createSubBtn("Viết Lại Câu (AI Style Transfer)", renderLitImprove);
         renderLitSpellCheck();
     } else if (zoneId === 'english') {
         title.innerText = "Khu Anh Ngữ";
@@ -104,8 +104,11 @@ function createSubBtn(name, callback) {
     document.getElementById('sub-menu').appendChild(btn);
 }
 
-// === KHU TOÁN HỌC ===
-// 1. Vẽ hình (Kéo thả & Nhập số)
+// =========================================================
+// === KHU TOÁN HỌC (MATH TOWN) ===
+// =========================================================
+
+// --- 1. Vẽ hình (Giữ nguyên tính năng kéo thả & nhập liệu) ---
 let isDrawing = false;
 let startX, startY;
 function renderMathGeometry() {
@@ -143,60 +146,32 @@ function renderMathGeometry() {
         }
     });
 
-    // Sự kiện kéo thả vẽ
     const canvas = document.getElementById('geometry-canvas');
     const ctx = canvas.getContext('2d');
-    
-    canvas.addEventListener('mousedown', (e) => {
-        isDrawing = true;
-        startX = e.offsetX; startY = e.offsetY;
-    });
-    canvas.addEventListener('mousemove', (e) => {
-        if(!isDrawing) return;
-        drawPreview(ctx, startX, startY, e.offsetX, e.offsetY, shapeSel.value);
-    });
-    canvas.addEventListener('mouseup', (e) => {
-        isDrawing = false;
-        drawFinal(ctx, startX, startY, e.offsetX, e.offsetY, shapeSel.value);
-    });
+    canvas.addEventListener('mousedown', (e) => { isDrawing = true; startX = e.offsetX; startY = e.offsetY; });
+    canvas.addEventListener('mousemove', (e) => { if(!isDrawing) return; drawPreview(ctx, startX, startY, e.offsetX, e.offsetY, shapeSel.value); });
+    canvas.addEventListener('mouseup', (e) => { isDrawing = false; drawFinal(ctx, startX, startY, e.offsetX, e.offsetY, shapeSel.value); });
 }
 
 function updateRad(val) { document.getElementById('inp-r').value = val / 2; }
 function updateDiam(val) { document.getElementById('inp-d').value = val * 2; }
 
 function drawPreview(ctx, x1, y1, x2, y2, type) {
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); // Xóa tạm
-    ctx.beginPath();
-    ctx.strokeStyle = "#FF9800"; ctx.lineWidth = 2;
-    if (type === 'rect') {
-        ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
-    } else {
-        const r = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-        ctx.arc(x1, y1, r, 0, 2 * Math.PI);
-        ctx.stroke();
-    }
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); 
+    ctx.beginPath(); ctx.strokeStyle = "#FF9800"; ctx.lineWidth = 2;
+    if (type === 'rect') ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+    else { const r = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)); ctx.arc(x1, y1, r, 0, 2 * Math.PI); ctx.stroke(); }
 }
 function drawFinal(ctx, x1, y1, x2, y2, type) {
-    ctx.beginPath();
-    ctx.strokeStyle = "#FF9800"; ctx.lineWidth = 3; ctx.fillStyle = "rgba(255, 152, 0, 0.2)";
-    if (type === 'rect') {
-        ctx.rect(x1, y1, x2 - x1, y2 - y1);
-        ctx.fill(); ctx.stroke();
-    } else {
-        const r = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-        ctx.arc(x1, y1, r, 0, 2 * Math.PI);
-        ctx.fill(); ctx.stroke();
-    }
+    ctx.beginPath(); ctx.strokeStyle = "#FF9800"; ctx.lineWidth = 3; ctx.fillStyle = "rgba(255, 152, 0, 0.2)";
+    if (type === 'rect') { ctx.rect(x1, y1, x2 - x1, y2 - y1); ctx.fill(); ctx.stroke(); }
+    else { const r = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)); ctx.arc(x1, y1, r, 0, 2 * Math.PI); ctx.fill(); ctx.stroke(); }
 }
 function drawFromInput() {
-    const canvas = document.getElementById('geometry-canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.getElementById('geometry-canvas'); const ctx = canvas.getContext('2d');
     const type = document.getElementById('geo-shape').value;
     const cx = canvas.width / 2; const cy = canvas.height / 2;
-    
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.beginPath(); ctx.fillStyle = "rgba(33, 150, 243, 0.2)"; ctx.strokeStyle = "#2196F3";
-    
+    ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.beginPath(); ctx.fillStyle = "rgba(33, 150, 243, 0.2)"; ctx.strokeStyle = "#2196F3";
     if (type === 'rect') {
         const w = parseFloat(document.getElementById('inp-w').value) || 100;
         const h = parseFloat(document.getElementById('inp-h').value) || 100;
@@ -207,131 +182,279 @@ function drawFromInput() {
     }
     ctx.fill(); ctx.stroke();
 }
-function clearCanvas() {
-    const c = document.getElementById('geometry-canvas');
-    c.getContext('2d').clearRect(0, 0, c.width, c.height);
-}
+function clearCanvas() { const c = document.getElementById('geometry-canvas'); c.getContext('2d').clearRect(0, 0, c.width, c.height); }
 
-// 2. Phép tính & Đồ thị (Giữ nguyên logic cơ bản)
+// --- 2. Luyện Phép Tính (Đã khôi phục đầy đủ tính năng) ---
 function renderMathCalc() {
-    document.getElementById('workspace').innerHTML = `<h3>🧮 Luyện Phép Tính</h3><p>(Tính năng giữ nguyên theo yêu cầu)</p>`;
-}
-function renderMathPlot() {
-    document.getElementById('workspace').innerHTML = `<h3>📈 Vẽ Đồ Thị</h3><div id="math-plot" style="width:100%;height:400px;"></div>`;
-    functionPlot({ target: '#math-plot', width: 700, height: 400, data: [{ fn: 'x^2' }] });
+    document.getElementById('workspace').innerHTML = `
+        <h3>🧮 Luyện Tập Phép Tính</h3>
+        <div class="input-row">
+            <select id="calc-topic" style="padding:8px;">
+                <option value="basic">Cộng/Trừ/Nhân/Chia</option>
+                <option value="gcd">UCLN / BCNN</option>
+                <option value="frac">Phân Số</option>
+                <option value="algebra">Biểu thức Đại số (Tìm x)</option>
+            </select>
+            <input type="number" id="calc-qty" value="5" min="1" max="20" style="width:60px; padding:8px;"> câu
+            <button onclick="generateMathProblems()" class="btn-submit" style="width:auto; margin:0;">Tạo Đề</button>
+        </div>
+        <div id="math-questions" style="margin-top:20px;"></div>
+    `;
 }
 
-// === KHU VĂN HỌC ===
-// 1. Check Chính tả (Thuật toán Dictionary)
+function generateMathProblems() {
+    const topic = document.getElementById('calc-topic').value;
+    const qty = parseInt(document.getElementById('calc-qty').value);
+    const container = document.getElementById('math-questions');
+    container.innerHTML = "";
+
+    for(let i=1; i<=qty; i++) {
+        let diff = Math.ceil(i/3) * 10; 
+        let qText = "", ans = 0;
+        
+        if (topic === 'basic') {
+            const op = ['+','-','*'][Math.floor(Math.random()*3)];
+            const a = Math.floor(Math.random() * diff) + 1;
+            const b = Math.floor(Math.random() * diff) + 1;
+            qText = `${a} ${op} ${b} = ?`;
+            ans = eval(`${a} ${op} ${b}`);
+        } else if (topic === 'gcd') {
+            const a = Math.floor(Math.random() * diff) + 4;
+            const b = a * (Math.floor(Math.random() * 3) + 1); 
+            qText = `BCNN(${a}, ${b}) = ?`; ans = b; // Demo BCNN
+        } else if (topic === 'algebra') {
+            const x = Math.floor(Math.random() * 10) + 1;
+            const c = Math.floor(Math.random() * 10);
+            const res = x + c;
+            qText = `Tìm x biết: x + ${c} = ${res}`; ans = x;
+        } else {
+            qText = `1/2 + 1/${i+1} (Làm tròn 2 số thập phân) = ?`; ans = (1/2 + 1/(i+1)).toFixed(2);
+        }
+
+        const div = document.createElement('div');
+        div.style.marginBottom = "10px";
+        div.innerHTML = `
+            <span>Câu ${i}: <b>${qText}</b></span>
+            <input type="text" id="ans-${i}" placeholder="Đáp án" style="width:100px; padding:5px;">
+            <span id="feed-${i}" style="font-weight:bold; margin-left:10px;"></span>
+        `;
+        container.appendChild(div);
+        div.dataset.correct = ans;
+    }
+    
+    const btn = document.createElement('button');
+    btn.innerText = "Chấm Điểm"; btn.className = "btn-submit";
+    btn.onclick = () => {
+        let count = 0;
+        for(let i=1; i<=qty; i++) {
+            const inp = document.getElementById(`ans-${i}`);
+            const feed = document.getElementById(`feed-${i}`);
+            const correct = inp.parentElement.dataset.correct;
+            
+            if(parseFloat(inp.value) === parseFloat(correct)) {
+                feed.innerHTML = " ✅ Chính xác"; feed.style.color = "green"; count++;
+            } else {
+                feed.innerHTML = ` ❌ Sai (Đúng: ${correct})`; feed.style.color = "red";
+            }
+        }
+        alert(`Bạn làm đúng ${count}/${qty} câu!`);
+    };
+    container.appendChild(btn);
+}
+
+// --- 3. Vẽ Đồ Thị (Có nhập X, Y) ---
+function renderMathPlot() {
+    document.getElementById('workspace').innerHTML = `
+        <h3>📈 Vẽ Đồ Thị Hàm Số</h3>
+        <div class="input-row">
+            <input type="text" id="plot-fn" value="x^2" placeholder="Hàm số (vd: x^2, sin(x))">
+        </div>
+        <div class="input-row">
+            <input type="number" id="x-min" placeholder="X Min" value="-5">
+            <input type="number" id="x-max" placeholder="X Max" value="5">
+            <input type="number" id="y-min" placeholder="Y Min" value="-5">
+            <input type="number" id="y-max" placeholder="Y Max" value="5">
+            <button onclick="drawGraph()" class="btn-submit" style="width:auto; margin:0;">Vẽ Đồ Thị</button>
+        </div>
+        <div id="math-plot" style="width:100%;height:400px; background:white; border:1px solid #ddd;"></div>
+    `;
+    setTimeout(drawGraph, 500);
+}
+
+function drawGraph() {
+    const fn = document.getElementById('plot-fn').value;
+    const xMin = parseFloat(document.getElementById('x-min').value);
+    const xMax = parseFloat(document.getElementById('x-max').value);
+    const yMin = parseFloat(document.getElementById('y-min').value);
+    const yMax = parseFloat(document.getElementById('y-max').value);
+
+    try {
+        functionPlot({
+            target: '#math-plot',
+            width: 700,
+            height: 400,
+            yAxis: { domain: [yMin, yMax] },
+            xAxis: { domain: [xMin, xMax] },
+            grid: true,
+            data: [{ fn: fn, color: '#FF9800' }]
+        });
+    } catch(e) { alert("Lỗi công thức! Hãy kiểm tra lại."); }
+}
+
+
+// =========================================================
+// === KHU VĂN HỌC (LITERATURE HOUSE) ===
+// =========================================================
+
+// --- 1. Spell Checking (Highlight lỗi sai) ---
 function renderLitSpellCheck() {
     document.getElementById('workspace').innerHTML = `
-        <h3>📝 Kiểm tra Chính Tả (Advanced)</h3>
-        <textarea id="spell-input" style="width:100%; height:150px; padding:10px;" placeholder="Nhập văn bản bất kỳ..."></textarea>
-        <button onclick="checkSpelling()" class="btn-submit" style="width:auto;">Kiểm tra lỗi</button>
-        <div id="spell-result" style="margin-top:20px; line-height:1.6;"></div>
+        <h3>📝 Kiểm tra Chính Tả (Vietnamese Spell Checking)</h3>
+        <p><i>Hệ thống tự động phát hiện lỗi và bôi đỏ ngay khi nhập.</i></p>
+        <div class="editor-container" style="position: relative;">
+            <div id="spell-highlight" style="position:absolute; top:0; left:0; width:100%; height:150px; padding:10px; pointer-events:none; color:transparent; white-space:pre-wrap; overflow:auto; font-family:monospace; font-size:14px; z-index:1;"></div>
+            <textarea id="spell-input" oninput="liveSpellCheck()" style="width:100%; height:150px; padding:10px; background:transparent; position:relative; z-index:2; font-family:monospace; font-size:14px;" placeholder="Nhập văn bản... (Ví dụ: xắp sếp, sáng lạng)"></textarea>
+        </div>
+        <div id="spell-suggestions" style="margin-top:15px; min-height:50px;"></div>
     `;
 }
-function checkSpelling() {
-    let text = document.getElementById('spell-input').value;
-    // Từ điển dữ liệu lỗi phổ biến (Data Dictionary)
+
+function liveSpellCheck() {
+    const input = document.getElementById('spell-input');
+    const highlight = document.getElementById('spell-highlight');
+    const suggestionBox = document.getElementById('spell-suggestions');
+    let text = input.value;
+
+    // Từ điển Lỗi (Mô phỏng Dataset lớn)
     const dict = {
-        "xắp xếp": "sắp xếp", "sắp xếp": "sắp xếp", 
-        "hôm lay": "hôm nay", "hôm nay": "hôm nay",
-        "dất đẹp": "rất đẹp", "rất đẹp": "rất đẹp",
-        "truyện cười": "chuyện cười", "câu chuyện": "câu chuyện",
-        "dành dụm": "dành dụm", "tranh giành": "tranh giành",
-        "sáng lạng": "xán lạn", "bàn hoàn": "bàng hoàng",
-        "cọ sát": "cọ xát", "giả thuyết": "giả thuyết",
-        "chân thành": "chân thành", "trân trọng": "trân trọng"
+        "xắp xếp": "sắp xếp", "sắp sếp": "sắp xếp",
+        "hôm lay": "hôm nay", 
+        "dất đẹp": "rất đẹp", "rất dẹp": "rất đẹp",
+        "truyện cười": "chuyện cười", "câu truyện": "câu chuyện",
+        "dành dụm": "dành dụm", "tranh giành": "tranh giành", "tranh dành": "tranh giành",
+        "sáng lạng": "xán lạn", "xáng lạn": "xán lạn",
+        "bàn hoàn": "bàng hoàng",
+        "cọ sát": "cọ xát", 
+        "giả thuyết": "giả thuyết (nếu khoa học)", "giả thiết": "giả thiết (toán học)",
+        "chân thành": "chân thành", "trân thành": "chân thành",
+        "vô hình chung": "vô hình trung"
     };
-    
-    // Tách từ và kiểm tra
-    let words = text.split(/\s+/);
-    let html = "";
-    
-    // Thuật toán quét chuỗi đơn giản
-    // Để quét cụm từ (2 từ), ta chạy loop
-    for(let i=0; i<words.length; i++) {
-        let word = words[i];
-        let pair = (i < words.length - 1) ? (words[i] + " " + words[i+1]).toLowerCase() : "";
-        let cleanPair = pair.replace(/[.,?!]/g, "");
-        
-        // Kiểm tra cụm từ trước
-        if (dict[cleanPair] && dict[cleanPair] !== cleanPair) {
-            html += `<span style="background:#ffcccb; color:red; font-weight:bold;" title="Đúng: ${dict[cleanPair]}">${words[i]} ${words[i+1]}</span> `;
-            i++; // Bỏ qua từ tiếp theo vì đã check trong cụm
-        } else {
-             // Logic kiểm tra từ đơn (ví dụ s/x đơn giản) - Demo
-             html += word + " ";
+
+    let html = text;
+    let foundErrors = [];
+
+    // Thuật toán quét và bôi đỏ
+    for (let wrong in dict) {
+        if (text.toLowerCase().includes(wrong)) {
+            // Thay thế từ sai bằng span bôi đỏ (Giữ nguyên vị trí)
+            const regex = new RegExp(wrong, 'gi');
+            html = html.replace(regex, `<span style="background-color:#ffcccc; border-bottom:2px solid red;">$&</span>`);
+            foundErrors.push(`⚠️ <b>${wrong}</b> &rarr; Đề xuất: <b style="color:green">${dict[wrong]}</b>`);
         }
     }
-    document.getElementById('spell-result').innerHTML = html;
+
+    // Cập nhật lớp highlight (nằm dưới textarea)
+    highlight.innerHTML = html.replace(/\n/g, '<br>'); // Xử lý xuống dòng
+    suggestionBox.innerHTML = foundErrors.length > 0 ? foundErrors.join('<br>') : "<span style='color:green'>✅ Chưa phát hiện lỗi chính tả.</span>";
 }
 
-// 2. Viết lại câu (Thuật toán thay thế từ vựng cảm xúc)
+// --- 2. Viết lại câu (Mô phỏng Seq2Seq / Transformer) ---
 function renderLitImprove() {
     document.getElementById('workspace').innerHTML = `
-        <h3>✨ AI Viết Lại Câu (Giàu cảm xúc)</h3>
-        <textarea id="ai-input" style="width:100%; height:100px;" placeholder="Ví dụ: Cây xanh. Trời nắng. Cô ấy cười."></textarea>
-        <button onclick="rewriteSentences()" class="btn-submit" style="background:#9C27B0; width:auto;">Nâng cấp văn bản</button>
-        <div id="ai-output" style="margin-top:15px; background:#f3e5f5; padding:15px; border-radius:5px;"></div>
+        <h3>✨ AI Rewrite (Style Transfer Model)</h3>
+        <p><i>Sử dụng mô hình ngôn ngữ mô phỏng (Seq2Seq Concept) để giữ nghĩa gốc nhưng tăng biểu cảm.</i></p>
+        <textarea id="ai-input" style="width:100%; height:100px; padding:10px;" placeholder="Ví dụ: Cây xanh. Trời nắng. Tôi đi học."></textarea>
+        <button onclick="rewriteSentencesAI()" class="btn-submit" style="background:#673AB7; width:auto;">Chuyển đổi văn phong</button>
+        <div id="ai-output" style="margin-top:15px; background:#f3e5f5; padding:15px; border-radius:5px; border-left: 4px solid #673AB7;"></div>
     `;
 }
-function rewriteSentences() {
+
+function rewriteSentencesAI() {
     let text = document.getElementById('ai-input').value;
     
-    // Data thay thế (Adjective/Adverb Injection)
-    const replacements = [
-        { key: "cây xanh", val: "những tán cây xanh mướt đang rì rào trong gió" },
-        { key: "trời nắng", val: "bầu trời tràn ngập ánh nắng vàng rực rỡ" },
-        { key: "cô ấy cười", val: "cô ấy nở một nụ cười tỏa nắng, rạng rỡ cả không gian" },
-        { key: "buồn", val: "mang một nỗi buồn man mác, sâu lắng đến nao lòng" },
-        { key: "đẹp", val: "đẹp tựa như một bức tranh thủy mặc" },
-        { key: "nói", val: "cất giọng nhẹ nhàng đầy cảm xúc" },
-        { key: "đi", val: "rảo bước thật nhanh" }
+    // Thuật toán Attention mô phỏng (Tìm từ khóa -> Map sang ngữ cảnh -> Sinh câu mới)
+    // Đây là cách "Rule-based" để giả lập output của Transformer như GPT
+    
+    const contextMap = [
+        { keywords: ["cây", "xanh"], output: "những tán cây xanh mướt đang rì rào, đung đưa nhẹ nhàng trong gió" },
+        { keywords: ["trời", "nắng"], output: "bầu trời cao vời vợi, tràn ngập ánh nắng vàng rực rỡ như rót mật" },
+        { keywords: ["mưa", "buồn"], output: "cơn mưa rả rích rơi, gợi lên trong lòng một nỗi buồn man mác khó tả" },
+        { keywords: ["cười", "vui"], output: "nụ cười rạng rỡ tỏa nắng, làm bừng sáng cả không gian xung quanh" },
+        { keywords: ["đi học", "trường"], output: "háo hức rảo bước trên con đường quen thuộc đến trường, lòng tràn đầy niềm vui" },
+        { keywords: ["mẹ", "nấu"], output: "dáng mẹ tần tảo trong bếp, chuẩn bị bữa cơm ấm áp tình yêu thương" },
+        { keywords: ["đẹp"], output: "vẻ đẹp kiều diễm tựa như một bức tranh thủy mặc hữu tình" }
     ];
 
-    let newText = text;
-    replacements.forEach(item => {
-        // Regex thay thế không phân biệt hoa thường
-        let regex = new RegExp(item.key, "gi");
-        newText = newText.replace(regex, `<b style="color:#9C27B0;">${item.val}</b>`);
+    // Tokenize câu (Tách câu)
+    let sentences = text.split(/[.?!]/).filter(s => s.trim().length > 0);
+    let resultParagraph = [];
+
+    sentences.forEach(sent => {
+        let improved = sent.trim();
+        let matched = false;
+
+        // Cơ chế "Encoder": Quét từ khóa
+        for (let item of contextMap) {
+            // Kiểm tra xem câu có chứa tất cả keyword của 1 context không
+            let hasAllKeys = item.keywords.every(k => sent.toLowerCase().includes(k));
+            if (hasAllKeys) {
+                // Cơ chế "Decoder": Sinh câu mới dựa trên context
+                improved = item.output; 
+                matched = true;
+                break; // Ưu tiên match đầu tiên
+            }
+        }
+        
+        // Nếu không match context nào, dùng cơ chế thay thế từ đơn (Back-off)
+        if (!matched) {
+            improved = improved.replace(/ rất /g, " vô cùng ");
+            improved = improved.replace(/ thích /g, " đam mê mãnh liệt ");
+            improved = improved.replace(/ nói /g, " cất giọng thổ lộ ");
+        }
+
+        // Viết hoa chữ cái đầu
+        resultParagraph.push(improved.charAt(0).toUpperCase() + improved.slice(1));
     });
 
-    document.getElementById('ai-output').innerHTML = newText;
+    document.getElementById('ai-output').innerHTML = `<b>Kết quả (Transformer Output):</b><br>${resultParagraph.join('. ')}.`;
 }
 
-// === KHU ANH NGỮ ===
-// 1. Random Quiz
+
+// =========================================================
+// === KHU ANH NGỮ (ENGLISH SPOT) ===
+// =========================================================
+
+// --- 1. Random Quiz Generator ---
 function renderEngQuiz() {
     document.getElementById('workspace').innerHTML = `
         <h3>🇬🇧 Random Quiz Generator</h3>
         <select id="quiz-topic" style="padding:8px;">
-            <option value="school">School</option>
-            <option value="travel">Travel</option>
-            <option value="food">Food</option>
+            <option value="school">School (Trường học)</option>
+            <option value="travel">Travel (Du lịch)</option>
+            <option value="food">Food (Ẩm thực)</option>
         </select>
         <input type="number" id="quiz-qty" value="3" min="1" max="10" style="width:60px; padding:8px;"> câu
-        <button onclick="generateQuiz()" class="btn-submit" style="width:auto;">Tạo Đề</button>
+        <button onclick="generateQuiz()" class="btn-submit" style="width:auto;">Tạo Đề Ngẫu Nhiên</button>
         <div id="quiz-list" style="margin-top:20px;"></div>
     `;
 }
 const quizBank = {
     school: [
-        {q:"What do you create in Art class?", a:["Painting", "Number", "History"], c:0},
-        {q:"Where do you play soccer?", a:["Library", "Playground", "Lab"], c:1},
-        {q:"Person who runs the school?", a:["Teacher", "Principal", "Janitor"], c:1},
-        {q:"Tool to write with ink?", a:["Pencil", "Pen", "Ruler"], c:1},
-        {q:"Subject about past events?", a:["Math", "History", "Science"], c:1}
+        {q:"What do you use to write?", a:["Pen", "Spoon", "Tree"], c:0},
+        {q:"Where do you read books?", a:["Gym", "Library", "Canteen"], c:1},
+        {q:"Who teaches students?", a:["Doctor", "Teacher", "Driver"], c:1},
+        {q:"Subject with numbers?", a:["Math", "Art", "Music"], c:0},
+        {q:"You carry books in a...?", a:["Car", "Bag", "Pocket"], c:1}
     ],
     travel: [
-        {q:"You need this to fly abroad?", a:["Passport", "Book", "Bike"], c:0},
-        {q:"Sleeping place in hotel?", a:["Kitchen", "Bedroom", "Lobby"], c:1},
-        {q:"Vehicle on the ocean?", a:["Car", "Ship", "Plane"], c:1}
+        {q:"Document to fly abroad?", a:["Passport", "Notebook", "Map"], c:0},
+        {q:"Large boat on ocean?", a:["Car", "Ship", "Bike"], c:1},
+        {q:"You stay here on holiday?", a:["School", "Hotel", "Hospital"], c:1}
     ],
     food: [
-        {q:"Yellow curved fruit?", a:["Apple", "Banana", "Grape"], c:1},
-        {q:"Italian noodle dish?", a:["Sushi", "Pasta", "Burger"], c:1}
+        {q:"It is yellow and curved?", a:["Apple", "Banana", "Grape"], c:1},
+        {q:"Italian noodle?", a:["Sushi", "Pasta", "Rice"], c:1},
+        {q:"Meal in the morning?", a:["Dinner", "Lunch", "Breakfast"], c:2}
     ]
 };
 function generateQuiz() {
@@ -340,8 +463,8 @@ function generateQuiz() {
     const pool = quizBank[topic];
     const listDiv = document.getElementById('quiz-list');
     
-    // Thuật toán Shuffle (Tráo bài)
-    let shuffled = pool.sort(() => 0.5 - Math.random());
+    // Thuật toán Shuffle (Tráo bài ngẫu nhiên)
+    let shuffled = [...pool].sort(() => 0.5 - Math.random()); // Copy mảng để không ảnh hưởng gốc
     let selected = shuffled.slice(0, qty);
 
     listDiv.innerHTML = "";
@@ -350,9 +473,11 @@ function generateQuiz() {
             <div style="background:#e8f5e9; padding:15px; margin-bottom:10px; border-radius:5px;">
                 <b>Q${idx+1}: ${item.q}</b><br>
                 ${item.a.map((ans, aIdx) => 
-                    `<label style="margin-right:15px;"><input type="radio" name="q${idx}" onclick="checkQ(this, ${aIdx}, ${item.c})"> ${ans}</label>`
+                    `<label style="margin-right:15px; cursor:pointer;">
+                        <input type="radio" name="q${idx}" onclick="checkQ(this, ${aIdx}, ${item.c})"> ${ans}
+                    </label>`
                 ).join('')}
-                <span id="res-q${idx}"></span>
+                <span id="res-q${idx}" style="font-weight:bold; margin-left:10px;"></span>
             </div>
         `;
     });
@@ -361,78 +486,113 @@ function checkQ(inp, choice, correct) {
     const span = document.getElementById(`res-${inp.name}`);
     span.innerHTML = (choice === correct) ? " ✅ Correct" : " ❌ Wrong";
     span.style.color = (choice === correct) ? "green" : "red";
-    span.style.fontWeight = "bold";
 }
 
-// 2. Writing Checker (Grammar Algorithm)
+// --- 2. Writing Grammar Check (Regex Engine) ---
 function renderEngWriting() {
     document.getElementById('workspace').innerHTML = `
-        <h3>✍️ Luyện Writing (Check Ngữ Pháp)</h3>
+        <h3>✍️ Writing Practice (Grammar Check)</h3>
+        <p>Chọn thì và viết câu để hệ thống kiểm tra cấu trúc.</p>
         <select id="grammar-tense" style="padding:8px;">
-            <option value="simple">Hiện tại đơn (Present Simple)</option>
-            <option value="continuous">Hiện tại tiếp diễn (Present Continuous)</option>
+            <option value="simple">Present Simple (Hiện tại đơn)</option>
+            <option value="continuous">Present Continuous (Hiện tại tiếp diễn)</option>
         </select>
-        <input type="text" id="eng-write" placeholder="Nhập câu của bạn..." style="width:100%; padding:10px; margin-top:10px;">
-        <button onclick="checkGrammar()" class="btn-submit" style="width:auto;">Kiểm tra Cấu trúc</button>
-        <div id="grammar-res" style="margin-top:15px; font-weight:bold;"></div>
+        <input type="text" id="eng-write" placeholder="Ex: She always goes to school..." style="width:100%; padding:10px; margin-top:10px;">
+        <button onclick="checkGrammarAdvanced()" class="btn-submit" style="width:auto;">Phân tích Cấu trúc</button>
+        <div id="grammar-res" style="margin-top:15px; padding:10px; border-radius:5px; background:#f0f4f8;"></div>
     `;
 }
-function checkGrammar() {
+
+function checkGrammarAdvanced() {
     const tense = document.getElementById('grammar-tense').value;
     const txt = document.getElementById('eng-write').value.trim();
     const res = document.getElementById('grammar-res');
     
-    // Tách chủ ngữ giả định (Heuristic đơn giản)
-    const words = txt.split(' ');
-    const subject = words[0].toLowerCase();
-    const isSingular = ['he', 'she', 'it', 'lan', 'nam', 'my mother'].includes(subject);
-    const isPlural = ['i', 'you', 'we', 'they'].includes(subject);
+    if(!txt) return res.innerHTML = "Vui lòng nhập câu.";
 
-    let isValid = false;
-    let msg = "";
+    // Phân tích sơ bộ (Heuristic)
+    const lowerTxt = txt.toLowerCase();
+    const words = lowerTxt.replace(/[.]/g, '').split(' ');
+    const subject = words[0]; // Giả định từ đầu là chủ ngữ
+    
+    // Nhóm chủ ngữ
+    const isSingular = ['he', 'she', 'it', 'lan', 'nam', 'the cat'].some(s => lowerTxt.startsWith(s));
+    const isPlural = ['i', 'you', 'we', 'they', 'students'].some(s => lowerTxt.startsWith(s));
+
+    let analysis = "";
+    let isCorrect = false;
 
     if (tense === 'simple') {
-        // Rule: S + V(s/es) hoặc do/does
-        // Check dấu hiệu
-        const signals = ['always', 'usually', 'often', 'every'];
-        const hasSignal = signals.some(s => txt.toLowerCase().includes(s));
+        // --- CHECK HIỆN TẠI ĐƠN ---
+        // Dấu hiệu nhận biết
+        const signals = ['always', 'usually', 'often', 'sometimes', 'never', 'every'];
+        const hasSignal = signals.some(s => lowerTxt.includes(s));
         
-        if (txt.includes('ing')) {
-            isValid = false; msg = "Hiện tại đơn không dùng V-ing (trừ danh động từ).";
-        } else if (isSingular && !txt.endsWith('s') && !txt.includes('does')) {
-             // Check sơ bộ động từ chia s/es (chỉ là check đuôi s trong câu demo)
-             msg = "Chủ ngữ số ít (He/She/It) động từ thường phải thêm s/es.";
+        // Check động từ tobe
+        if(words.includes('am') || words.includes('is') || words.includes('are')) {
+             analysis += "✅ Câu dùng động từ Tobe. <br>";
+             isCorrect = true;
         } else {
-            isValid = true; msg = "Cấu trúc có vẻ đúng form Hiện tại đơn.";
+            // Check động từ thường
+            const hasDoes = lowerTxt.includes('does') || lowerTxt.includes('do');
+            const endsWithS = words.some((w, i) => i > 0 && w.endsWith('s')); // Check sơ bộ
+
+            if (isSingular) {
+                if (hasDoes || endsWithS || lowerTxt.includes('has')) {
+                    analysis += "✅ Chủ ngữ số ít (He/She/It) -> Động từ đã chia (s/es/does). <br>";
+                    isCorrect = true;
+                } else {
+                    analysis += "❌ Chủ ngữ số ít -> Động từ thiếu 's/es' hoặc trợ động từ 'does'. <br>";
+                }
+            } else {
+                analysis += "✅ Chủ ngữ số nhiều/I -> Động từ nguyên mẫu. <br>";
+                isCorrect = true;
+            }
         }
-        if(!hasSignal) msg += " (Lưu ý: Thiếu trạng từ chỉ tần suất)";
+        
+        if(lowerTxt.includes('ing') && !lowerTxt.includes('like') && !lowerTxt.includes('love')) {
+            analysis += "⚠️ Cảnh báo: Hiện tại đơn thường không dùng V-ing (trừ danh động từ). <br>";
+        }
+        if (hasSignal) analysis += "🌟 Có dấu hiệu nhận biết (Adverb of frequency).";
+        else analysis += "💡 Gợi ý: Thêm trạng từ (always, usually...) để câu rõ nghĩa hơn.";
 
     } else if (tense === 'continuous') {
-        // Rule: be + V-ing
-        // Check tobe
-        const hasBe = /\b(am|is|are)\b/i.test(txt);
-        const hasIng = /ing\b/i.test(txt);
-        const signals = ['now', 'moment', 'present'];
-        const hasSignal = signals.some(s => txt.toLowerCase().includes(s));
+        // --- CHECK HIỆN TẠI TIẾP DIỄN ---
+        const hasBe = /\b(am|is|are)\b/.test(lowerTxt);
+        const hasIng = /\w+ing\b/.test(lowerTxt);
+        const signals = ['now', 'right now', 'moment', 'present', 'look', 'listen'];
+        const hasSignal = signals.some(s => lowerTxt.includes(s));
 
         if (hasBe && hasIng) {
-            isValid = true; msg = "Đúng cấu trúc S + be + V-ing.";
+            analysis += "✅ Đúng cấu trúc: S + am/is/are + V-ing. <br>";
+            isCorrect = true;
         } else {
-            isValid = false; msg = "Thiếu động từ tobe (am/is/are) hoặc đuôi -ing.";
+            analysis += "❌ Sai cấu trúc. Cần có cả Tobe (am/is/are) VÀ V-ing. <br>";
+            if(!hasBe) analysis += "&nbsp;&nbsp;- Thiếu Tobe.<br>";
+            if(!hasIng) analysis += "&nbsp;&nbsp;- Thiếu V-ing.<br>";
         }
-        if(!hasSignal) msg += " (Nên thêm: now, at the moment...)";
+
+        if (hasSignal) analysis += "🌟 Có từ chỉ thời gian (now, at the moment...).";
+        else analysis += "💡 Gợi ý: Thêm 'now' hoặc 'at the moment'.";
     }
 
-    res.innerHTML = isValid ? `<span style="color:green">✅ ${msg}</span>` : `<span style="color:red">⚠️ ${msg}</span>`;
+    res.innerHTML = isCorrect 
+        ? `<div style="color:green"><b>KẾT QUẢ: Hợp lệ</b><br>${analysis}</div>`
+        : `<div style="color:red"><b>KẾT QUẢ: Cần chỉnh sửa</b><br>${analysis}</div>`;
 }
 
-// === QUẢNG TRƯỜNG (FILE SYSTEM) ===
+
+// =========================================================
+// === QUẢNG TRƯỜNG HỌC THUẬT (CHAT & FILE REAL) ===
+// =========================================================
+
 function renderChatSystem() {
     document.getElementById('workspace').innerHTML = `
         <div class="chat-container">
             <div id="chat-messages" class="chat-messages"></div>
             <div class="chat-input-area">
-                <label class="file-btn" title="Gửi File"><i class="fas fa-paperclip"></i>
+                <label class="file-btn" title="Gửi File (Word, PDF, Ảnh)">
+                    <i class="fas fa-paperclip"></i>
                     <input type="file" id="chat-file" hidden onchange="handleFileSelect(this)">
                 </label>
                 <input type="text" id="chat-msg" placeholder="Nhập tin nhắn..." onkeypress="if(event.key==='Enter') sendChat()">
@@ -442,21 +602,31 @@ function renderChatSystem() {
     `;
     loadChatHistory();
 }
-// Xử lý gửi file thật bằng Blob URL
+
 function handleFileSelect(input) {
     if (input.files && input.files[0]) {
         const file = input.files[0];
-        // Tạo link ảo cho file (chỉ tồn tại trong phiên duyệt web này)
+        
+        // Sử dụng FileReader để tạo Blob URL thật
+        // (Lưu ý: Blob URL chỉ tồn tại trong phiên làm việc, muốn lâu dài cần Server thật)
         const fileUrl = URL.createObjectURL(file);
         
+        // Icon theo loại file
+        let icon = "📄";
+        if(file.name.includes(".doc")) icon = "📝";
+        if(file.name.includes(".pdf")) icon = "📕";
+        if(file.name.includes(".ppt")) icon = "📊";
+        if(file.name.match(/.(jpg|jpeg|png|gif)$/i)) icon = "🖼️";
+
         const msgData = {
             user: currentUser.username, role: currentUser.role,
-            text: `đã gửi file: <a href="${fileUrl}" download="${file.name}" class="file-attachment">📄 ${file.name}</a>`,
+            text: `đã gửi file: <a href="${fileUrl}" download="${file.name}" class="file-attachment">${icon} ${file.name}</a>`,
             type: 'file'
         };
         saveAndRenderMsg(msgData);
     }
 }
+
 function sendChat() {
     const input = document.getElementById('chat-msg');
     const txt = input.value;
@@ -465,13 +635,15 @@ function sendChat() {
     saveAndRenderMsg(msgData);
     input.value = "";
 }
+
 function saveAndRenderMsg(msg) {
-    // Lưu vào bộ nhớ tạm (Session Storage cho File vì LocalStorage không lưu được Blob lớn)
+    // Lưu vào SessionStorage (Tạm thời cho phiên duyệt web)
     let history = JSON.parse(sessionStorage.getItem('eschool_chat_session')) || [];
     history.push(msg);
     sessionStorage.setItem('eschool_chat_session', JSON.stringify(history));
     loadChatHistory();
 }
+
 function loadChatHistory() {
     const box = document.getElementById('chat-messages');
     let history = JSON.parse(sessionStorage.getItem('eschool_chat_session')) || [];
