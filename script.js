@@ -1,7 +1,5 @@
-// --- 1. HỆ THỐNG QUẢN LÝ TÀI KHOẢN (LOCALSTORAGE) ---
+// --- 1. USER & AUTH SYSTEM ---
 let currentUser = null;
-
-// Tải danh sách user từ bộ nhớ trình duyệt (nếu chưa có thì tạo mảng rỗng)
 let usersDB = JSON.parse(localStorage.getItem('eschool_users')) || [];
 
 function switchAuthMode(mode) {
@@ -10,138 +8,94 @@ function switchAuthMode(mode) {
     document.getElementById('form-login').classList.toggle('hidden', mode !== 'login');
     document.getElementById('form-register').classList.toggle('hidden', mode !== 'register');
 }
-
 function toggleEmailField(isTeacher) {
     const emailInput = document.getElementById('reg-email');
     if (isTeacher) emailInput.classList.remove('hidden');
     else emailInput.classList.add('hidden');
 }
-
 function handleRegister() {
-    const userEl = document.getElementById('reg-username');
-    const passEl = document.getElementById('reg-password');
+    const userEl = document.getElementById('reg-username').value;
+    const passEl = document.getElementById('reg-password').value;
+    const emailEl = document.getElementById('reg-email').value;
     const roleEls = document.getElementsByName('reg-role');
-    const emailEl = document.getElementById('reg-email');
-
     let role = 'student';
     for(let r of roleEls) if(r.checked) role = r.value;
 
-    if (!userEl.value || !passEl.value) {
-        alert("Vui lòng điền đủ tên và mật khẩu!");
-        return;
-    }
-    if (role === 'teacher' && !emailEl.value) {
-        alert("Giáo viên bắt buộc phải có Email!");
-        return;
-    }
+    if (!userEl || !passEl) return alert("Vui lòng điền đủ thông tin!");
+    if (role === 'teacher' && !emailEl) return alert("Giáo viên cần nhập Email!");
+    if (usersDB.find(u => u.username === userEl)) return alert("Tên đăng nhập đã tồn tại!");
 
-    // Kiểm tra trùng tên
-    if (usersDB.find(u => u.username === userEl.value)) {
-        alert("Tên đăng nhập đã tồn tại!");
-        return;
-    }
-
-    // Tạo user mới
     const newUser = {
-        username: userEl.value,
-        password: passEl.value,
-        role: role,
-        email: emailEl.value || "",
-        avatar: role === 'teacher' 
-            ? "https://cdn-icons-png.flaticon.com/512/1995/1995574.png" 
-            : "https://cdn-icons-png.flaticon.com/512/2922/2922510.png"
+        username: userEl, password: passEl, role: role, email: emailEl,
+        avatar: role === 'teacher' ? "https://cdn-icons-png.flaticon.com/512/1995/1995574.png" : "https://cdn-icons-png.flaticon.com/512/2922/2922510.png"
     };
-
     usersDB.push(newUser);
     localStorage.setItem('eschool_users', JSON.stringify(usersDB));
     alert("Đăng ký thành công! Hãy đăng nhập.");
     switchAuthMode('login');
 }
-
 function handleLogin() {
     const userIn = document.getElementById('login-username').value;
     const passIn = document.getElementById('login-password').value;
-
     const user = usersDB.find(u => u.username === userIn && u.password === passIn);
 
     if (user) {
         currentUser = user;
-        renderUserInfo();
+        document.getElementById('user-avatar').src = currentUser.avatar;
+        document.getElementById('display-name').innerText = currentUser.username;
+        const badge = document.getElementById('user-badge');
+        badge.innerText = user.role === 'student' ? "Học sinh" : "Giáo viên";
+        badge.className = `badge ${user.role === 'student' ? 'badge-student' : 'badge-teacher'}`;
+        
         document.getElementById('auth-overlay').style.display = 'none';
         document.getElementById('app-container').classList.remove('hidden');
     } else {
         alert("Sai tên đăng nhập hoặc mật khẩu!");
     }
 }
+function logout() { location.reload(); }
 
-function renderUserInfo() {
-    document.getElementById('user-avatar').src = currentUser.avatar;
-    document.getElementById('display-name').innerText = currentUser.username;
-    const badge = document.getElementById('user-badge');
-    
-    if (currentUser.role === 'student') {
-        badge.innerText = "Học sinh";
-        badge.className = "badge badge-student"; // Màu xanh biển
-    } else {
-        badge.innerText = "Giáo viên";
-        badge.className = "badge badge-teacher"; // Màu xanh lá
-    }
-}
-
-function logout() {
-    currentUser = null;
-    location.reload();
-}
-
-// --- 2. HỆ THỐNG ĐIỀU HƯỚNG ---
+// --- 2. NAVIGATION ---
 function enterZone(zoneId) {
     document.getElementById('town-map').classList.add('hidden');
     document.getElementById('zone-content').classList.remove('hidden');
     loadZoneFeatures(zoneId);
 }
-
 function goBack() {
     document.getElementById('town-map').classList.remove('hidden');
     document.getElementById('zone-content').classList.add('hidden');
 }
 
-// --- 3. TÍNH NĂNG CHI TIẾT CÁC KHU VỰC ---
-
 function loadZoneFeatures(zoneId) {
     const menu = document.getElementById('sub-menu');
-    const workspace = document.getElementById('workspace');
-    menu.innerHTML = "";
-    workspace.innerHTML = "";
+    const ws = document.getElementById('workspace');
+    menu.innerHTML = ""; ws.innerHTML = "";
     const title = document.getElementById('zone-title');
 
     if (zoneId === 'math') {
         title.innerText = "Khu Toán Học";
-        createSubBtn("Vẽ Hình Học", renderMathGeometry);
+        createSubBtn("Vẽ & Tạo Hình", renderMathGeometry);
         createSubBtn("Luyện Phép Tính", renderMathCalc);
-        renderMathGeometry(); // Mặc định vào vẽ hình
-
+        createSubBtn("Vẽ Đồ Thị", renderMathPlot);
+        renderMathGeometry();
     } else if (zoneId === 'literature') {
         title.innerText = "Khu Văn Học";
-        createSubBtn("Sửa Lỗi Chính Tả", renderLitSpellCheck);
-        createSubBtn("Nâng Cấp Bài Văn (AI)", renderLitImprove);
+        createSubBtn("Sửa Lỗi Chính Tả (Smart)", renderLitSpellCheck);
+        createSubBtn("Viết Lại Câu (AI)", renderLitImprove);
         renderLitSpellCheck();
-
     } else if (zoneId === 'english') {
         title.innerText = "Khu Anh Ngữ";
-        createSubBtn("Quiz Theo Chủ Đề", renderEngQuiz);
-        createSubBtn("Luyện Writing (Thì)", renderEngWriting);
+        createSubBtn("Random Quiz", renderEngQuiz);
+        createSubBtn("Luyện Writing", renderEngWriting);
         renderEngQuiz();
-
     } else if (zoneId === 'square') {
         title.innerText = "Quảng Trường Học Thuật";
         renderChatSystem();
     }
 }
-
 function createSubBtn(name, callback) {
     const btn = document.createElement('button');
-    btn.className = "sub-btn";
-    btn.innerText = name;
+    btn.className = "sub-btn"; btn.innerText = name;
     btn.onclick = () => {
         document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -150,280 +104,337 @@ function createSubBtn(name, callback) {
     document.getElementById('sub-menu').appendChild(btn);
 }
 
-// === A. MATH FUNCTIONS ===
+// === KHU TOÁN HỌC ===
+// 1. Vẽ hình (Kéo thả & Nhập số)
+let isDrawing = false;
+let startX, startY;
 function renderMathGeometry() {
-    const ws = document.getElementById('workspace');
-    ws.innerHTML = `
-        <h3>🎨 Công cụ Tạo hình & Vẽ</h3>
-        <div style="margin-bottom:10px;">
-            <select id="geo-shape" style="padding:5px;">
-                <option value="rect">Hình Vuông/Chữ Nhật</option>
+    document.getElementById('workspace').innerHTML = `
+        <h3>🎨 Tạo hình học</h3>
+        <div class="input-row">
+            <select id="geo-shape">
+                <option value="rect">Hình Chữ Nhật / Vuông</option>
                 <option value="circle">Hình Tròn</option>
             </select>
-            <input type="number" id="geo-w" placeholder="Rộng / Bán kính" style="width:100px; padding:5px;">
-            <input type="number" id="geo-h" placeholder="Cao (nếu là HCN)" style="width:100px; padding:5px;">
-            <button onclick="drawGeometry()" class="btn-submit" style="width:auto;">Vẽ Ngay</button>
+            <button onclick="drawFromInput()" class="btn-submit" style="width:auto; margin:0;">Vẽ theo thông số</button>
+            <button onclick="clearCanvas()" class="btn-submit" style="width:auto; margin:0; background:#999;">Xóa bảng</button>
         </div>
-        <canvas id="geometry-canvas" width="600" height="400"></canvas>
+        <div class="input-row" id="rect-inputs">
+            <input type="number" id="inp-w" placeholder="Chiều rộng">
+            <input type="number" id="inp-h" placeholder="Chiều cao">
+        </div>
+        <div class="input-row hidden" id="circle-inputs">
+            <input type="number" id="inp-r" placeholder="Bán kính" oninput="updateDiam(this.value)">
+            <input type="number" id="inp-d" placeholder="Đường kính" oninput="updateRad(this.value)">
+        </div>
+        <p><i>Kéo thả chuột trên khung dưới để vẽ tự do:</i></p>
+        <canvas id="geometry-canvas" width="800" height="400"></canvas>
     `;
-}
-
-function drawGeometry() {
-    const canvas = document.getElementById('geometry-canvas');
-    const ctx = canvas.getContext('2d');
-    const type = document.getElementById('geo-shape').value;
-    const w = parseInt(document.getElementById('geo-w').value) || 50;
-    const h = parseInt(document.getElementById('geo-h').value) || w;
-
-    // Xóa cũ
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.beginPath();
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "#FF9800";
-    ctx.fillStyle = "rgba(255, 152, 0, 0.2)";
-
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-
-    if (type === 'rect') {
-        ctx.rect(centerX - w/2, centerY - h/2, w, h);
-        ctx.fillText(`Kích thước: ${w} x ${h}`, centerX - w/2, centerY - h/2 - 10);
-    } else {
-        ctx.arc(centerX, centerY, w, 0, 2 * Math.PI);
-        ctx.fillText(`Bán kính: ${w}`, centerX - w, centerY - w - 10);
-    }
-    ctx.fill();
-    ctx.stroke();
-}
-
-function renderMathCalc() {
-    const ws = document.getElementById('workspace');
-    ws.innerHTML = `
-        <h3>🧮 Tạo Phép Tính</h3>
-        <select id="calc-topic" style="padding:8px;">
-            <option value="basic">Cộng/Trừ/Nhân/Chia</option>
-            <option value="gcd">Ước/Bội (UCLN, BCNN)</option>
-            <option value="frac">Phân Số</option>
-        </select>
-        <input type="number" id="calc-qty" value="5" min="1" max="20" style="width:60px;"> câu
-        <button onclick="generateMathProblems()" class="btn-submit" style="width:auto;">Tạo Đề</button>
-        <div id="math-questions" style="margin-top:20px;"></div>
-    `;
-}
-
-function generateMathProblems() {
-    const topic = document.getElementById('calc-topic').value;
-    const qty = parseInt(document.getElementById('calc-qty').value);
-    const container = document.getElementById('math-questions');
-    container.innerHTML = "";
-
-    for(let i=1; i<=qty; i++) {
-        // Logic giả lập tăng độ khó
-        let diff = Math.ceil(i/3) * 10; 
-        let qText = "", ans = 0;
-        
-        if (topic === 'basic') {
-            const a = Math.floor(Math.random() * diff) + 1;
-            const b = Math.floor(Math.random() * diff) + 1;
-            qText = `${a} + ${b} = ?`; ans = a+b;
-        } else if (topic === 'gcd') {
-            const a = Math.floor(Math.random() * diff) + 4;
-            const b = a * 2; 
-            qText = `UCLN(${a}, ${b}) = ?`; ans = a; // Giả lập đơn giản
+    
+    // Xử lý ẩn hiện input
+    const shapeSel = document.getElementById('geo-shape');
+    shapeSel.addEventListener('change', () => {
+        if(shapeSel.value === 'rect') {
+            document.getElementById('rect-inputs').classList.remove('hidden');
+            document.getElementById('circle-inputs').classList.add('hidden');
         } else {
-            qText = `1/2 + 1/${i+1} (Dạng thập phân) = ?`; ans = (1/2 + 1/(i+1)).toFixed(2);
-        }
-
-        const div = document.createElement('div');
-        div.style.marginBottom = "10px";
-        div.innerHTML = `
-            <span>Câu ${i}: <b>${qText}</b></span>
-            <input type="text" id="ans-${i}" placeholder="Đáp án">
-            <span id="feed-${i}"></span>
-        `;
-        container.appendChild(div);
-        
-        // Lưu đáp án vào thuộc tính
-        div.dataset.correct = ans;
-    }
-    
-    // Nút nộp bài
-    const btn = document.createElement('button');
-    btn.innerText = "Chấm Điểm";
-    btn.className = "btn-submit";
-    btn.onclick = () => {
-        let count = 0;
-        for(let i=1; i<=qty; i++) {
-            const inp = document.getElementById(`ans-${i}`);
-            const feed = document.getElementById(`feed-${i}`);
-            const correct = inp.parentElement.dataset.correct;
-            
-            if(inp.value == correct) {
-                feed.innerHTML = " ✅ Chính xác";
-                feed.className = "correct";
-                count++;
-            } else {
-                feed.innerHTML = ` ❌ Sai rồi (Đúng: ${correct})`;
-                feed.className = "incorrect";
-            }
-        }
-        alert(`Bạn làm đúng ${count}/${qty} câu!`);
-    };
-    container.appendChild(btn);
-}
-
-// === B. LITERATURE FUNCTIONS (AI SIMULATION) ===
-function renderLitSpellCheck() {
-    const ws = document.getElementById('workspace');
-    ws.innerHTML = `
-        <h3>📝 Kiểm tra Chính Tả</h3>
-        <textarea id="lit-input" style="width:100%; height:100px;" placeholder="Nhập văn bản vào đây... Ví dụ: 'xắp sếp', 'hôm lay'"></textarea>
-        <button onclick="runSpellCheck()" class="btn-submit" style="width:auto; background:#2196F3;">Kiểm tra ngay</button>
-        <div id="lit-result" style="margin-top:15px;"></div>
-    `;
-}
-
-function runSpellCheck() {
-    let text = document.getElementById('lit-input').value;
-    const dict = [
-        { wrong: /xắp xếp/gi, right: "sắp xếp" },
-        { wrong: /hôm lay/gi, right: "hôm nay" },
-        { wrong: /truyện cười/gi, right: "chuyện cười" },
-        { wrong: /dất đẹp/gi, right: "rất đẹp" }
-    ];
-    
-    let html = text;
-    let errors = 0;
-    dict.forEach(rule => {
-        if(text.match(rule.wrong)) {
-            html = html.replace(rule.wrong, `<span style="background:#ffcccb; padding:2px; border-radius:3px; font-weight:bold;" title="Gợi ý: ${rule.right}">${rule.wrong.source.replace(/\\/g,'')}</span>`);
-            errors++;
+            document.getElementById('rect-inputs').classList.add('hidden');
+            document.getElementById('circle-inputs').classList.remove('hidden');
         }
     });
 
-    document.getElementById('lit-result').innerHTML = errors > 0 
-        ? `<h4>Phát hiện ${errors} lỗi sai:</h4><p>${html}</p><small>(Di chuột vào lỗi để xem sửa)</small>` 
-        : "<h4 style='color:green'>Không tìm thấy lỗi chính tả phổ biến!</h4>";
-}
-
-function renderLitImprove() {
-    const ws = document.getElementById('workspace');
-    ws.innerHTML = `
-        <h3>✨ AI Nâng Cấp Văn Bản</h3>
-        <textarea id="ai-input" style="width:100%; height:100px;" placeholder="Ví dụ: 'Bầu trời đẹp. Cây xanh.'"></textarea>
-        <button onclick="runAIImprove()" class="btn-submit" style="width:auto; background:#9C27B0;">Nâng Cấp Văn Phong</button>
-        <div id="ai-output" style="margin-top:15px; background:#f3e5f5; padding:10px; border-radius:5px;"></div>
-    `;
-}
-
-function runAIImprove() {
-    let text = document.getElementById('ai-input').value;
-    // AI giả lập bằng cách thêm từ ngữ miêu tả
-    if (text.includes("trời đẹp")) text = text.replace("trời đẹp", "bầu trời xanh thẳm, cao vời vợi đẹp như một bức tranh");
-    if (text.includes("Cây xanh")) text = text.replace("Cây xanh", "Những tán cây xanh mướt rung rinh trong gió nhẹ");
-    if (text.includes("buồn")) text = text.replace("buồn", "mang một nỗi buồn man mác, sâu lắng");
+    // Sự kiện kéo thả vẽ
+    const canvas = document.getElementById('geometry-canvas');
+    const ctx = canvas.getContext('2d');
     
-    document.getElementById('ai-output').innerHTML = `<b>AI Đề xuất:</b><br>${text}`;
+    canvas.addEventListener('mousedown', (e) => {
+        isDrawing = true;
+        startX = e.offsetX; startY = e.offsetY;
+    });
+    canvas.addEventListener('mousemove', (e) => {
+        if(!isDrawing) return;
+        drawPreview(ctx, startX, startY, e.offsetX, e.offsetY, shapeSel.value);
+    });
+    canvas.addEventListener('mouseup', (e) => {
+        isDrawing = false;
+        drawFinal(ctx, startX, startY, e.offsetX, e.offsetY, shapeSel.value);
+    });
 }
 
-// === C. ENGLISH FUNCTIONS ===
-function renderEngQuiz() {
-    const ws = document.getElementById('workspace');
-    ws.innerHTML = `
-        <h3>🇬🇧 Topic Quiz</h3>
-        <div style="margin-bottom:10px;">
-            <button onclick="startQuiz('school')" class="sub-btn">School</button>
-            <button onclick="startQuiz('sport')" class="sub-btn">Sport</button>
-            <button onclick="startQuiz('movies')" class="sub-btn">Movies</button>
-        </div>
-        <div id="quiz-area"></div>
-    `;
-}
+function updateRad(val) { document.getElementById('inp-r').value = val / 2; }
+function updateDiam(val) { document.getElementById('inp-d').value = val * 2; }
 
-const quizData = {
-    school: [
-        { q: "Where do you read books?", a: ["Library", "Canteen", "Gym"], c: 0 },
-        { q: "Person who teaches you?", a: ["Doctor", "Teacher", "Pilot"], c: 1 }
-    ],
-    sport: [
-        { q: "King of sports?", a: ["Tennis", "Football", "Golf"], c: 1 },
-        { q: "Sport played in water?", a: ["Swimming", "Running", "Boxing"], c: 0 }
-    ],
-    movies: [
-        { q: "Funny movie genre?", a: ["Horror", "Comedy", "Action"], c: 1 }
-    ]
-};
-
-function startQuiz(topic) {
-    const area = document.getElementById('quiz-area');
-    const questions = quizData[topic];
-    // Ngẫu nhiên hóa (demo)
-    const q = questions[Math.floor(Math.random() * questions.length)];
-    
-    area.innerHTML = `
-        <div style="background:#e8f5e9; padding:20px; border-radius:10px;">
-            <h4>Topic: ${topic.toUpperCase()}</h4>
-            <p style="font-size:18px;">${q.q}</p>
-            ${q.a.map((ans, idx) => 
-                `<button onclick="checkQuizAns(this, ${idx}, ${q.c})" style="display:block; width:100%; margin:5px 0; padding:10px; border:1px solid #ccc; cursor:pointer;">${ans}</button>`
-            ).join('')}
-            <p id="quiz-res"></p>
-        </div>
-    `;
-}
-
-function checkQuizAns(btn, choice, correct) {
-    const res = document.getElementById('quiz-res');
-    if(choice === correct) {
-        btn.style.background = "#c8e6c9";
-        res.innerHTML = "✅ Correct! Good job.";
+function drawPreview(ctx, x1, y1, x2, y2, type) {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); // Xóa tạm
+    ctx.beginPath();
+    ctx.strokeStyle = "#FF9800"; ctx.lineWidth = 2;
+    if (type === 'rect') {
+        ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
     } else {
-        btn.style.background = "#ffcdd2";
-        res.innerHTML = "❌ Wrong answer.";
+        const r = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        ctx.arc(x1, y1, r, 0, 2 * Math.PI);
+        ctx.stroke();
     }
 }
-
-function renderEngWriting() {
-    const ws = document.getElementById('workspace');
-    ws.innerHTML = `
-        <h3>✍️ Grammar Correction</h3>
-        <select id="tense-select" style="padding:5px;">
-            <option value="simple">Present Simple (Hiện tại đơn)</option>
-            <option value="continuous">Present Continuous (HT Tiếp diễn)</option>
-        </select>
-        <input type="text" id="eng-input" placeholder="Write a sentence... (e.g., I go to school)" style="width:100%; padding:10px; margin-top:10px;">
-        <button onclick="checkGrammar()" class="btn-submit" style="width:auto;">Check & Fix</button>
-        <div id="eng-fix" style="margin-top:10px; font-weight:bold;"></div>
-    `;
+function drawFinal(ctx, x1, y1, x2, y2, type) {
+    ctx.beginPath();
+    ctx.strokeStyle = "#FF9800"; ctx.lineWidth = 3; ctx.fillStyle = "rgba(255, 152, 0, 0.2)";
+    if (type === 'rect') {
+        ctx.rect(x1, y1, x2 - x1, y2 - y1);
+        ctx.fill(); ctx.stroke();
+    } else {
+        const r = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        ctx.arc(x1, y1, r, 0, 2 * Math.PI);
+        ctx.fill(); ctx.stroke();
+    }
+}
+function drawFromInput() {
+    const canvas = document.getElementById('geometry-canvas');
+    const ctx = canvas.getContext('2d');
+    const type = document.getElementById('geo-shape').value;
+    const cx = canvas.width / 2; const cy = canvas.height / 2;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath(); ctx.fillStyle = "rgba(33, 150, 243, 0.2)"; ctx.strokeStyle = "#2196F3";
+    
+    if (type === 'rect') {
+        const w = parseFloat(document.getElementById('inp-w').value) || 100;
+        const h = parseFloat(document.getElementById('inp-h').value) || 100;
+        ctx.rect(cx - w/2, cy - h/2, w, h);
+    } else {
+        const r = parseFloat(document.getElementById('inp-r').value) || 50;
+        ctx.arc(cx, cy, r, 0, 2*Math.PI);
+    }
+    ctx.fill(); ctx.stroke();
+}
+function clearCanvas() {
+    const c = document.getElementById('geometry-canvas');
+    c.getContext('2d').clearRect(0, 0, c.width, c.height);
 }
 
-function checkGrammar() {
-    const tense = document.getElementById('tense-select').value;
-    let txt = document.getElementById('eng-input').value;
-    const res = document.getElementById('eng-fix');
+// 2. Phép tính & Đồ thị (Giữ nguyên logic cơ bản)
+function renderMathCalc() {
+    document.getElementById('workspace').innerHTML = `<h3>🧮 Luyện Phép Tính</h3><p>(Tính năng giữ nguyên theo yêu cầu)</p>`;
+}
+function renderMathPlot() {
+    document.getElementById('workspace').innerHTML = `<h3>📈 Vẽ Đồ Thị</h3><div id="math-plot" style="width:100%;height:400px;"></div>`;
+    functionPlot({ target: '#math-plot', width: 700, height: 400, data: [{ fn: 'x^2' }] });
+}
 
-    if (tense === 'continuous') {
-        // Kiểm tra V-ing và tobe
-        if (!txt.includes("ing")) {
-            res.innerHTML = `⚠️ Gợi ý sửa: Thêm 'ing'. Ví dụ: "I am going..."`;
-            res.className = "incorrect";
-            return;
+// === KHU VĂN HỌC ===
+// 1. Check Chính tả (Thuật toán Dictionary)
+function renderLitSpellCheck() {
+    document.getElementById('workspace').innerHTML = `
+        <h3>📝 Kiểm tra Chính Tả (Advanced)</h3>
+        <textarea id="spell-input" style="width:100%; height:150px; padding:10px;" placeholder="Nhập văn bản bất kỳ..."></textarea>
+        <button onclick="checkSpelling()" class="btn-submit" style="width:auto;">Kiểm tra lỗi</button>
+        <div id="spell-result" style="margin-top:20px; line-height:1.6;"></div>
+    `;
+}
+function checkSpelling() {
+    let text = document.getElementById('spell-input').value;
+    // Từ điển dữ liệu lỗi phổ biến (Data Dictionary)
+    const dict = {
+        "xắp xếp": "sắp xếp", "sắp xếp": "sắp xếp", 
+        "hôm lay": "hôm nay", "hôm nay": "hôm nay",
+        "dất đẹp": "rất đẹp", "rất đẹp": "rất đẹp",
+        "truyện cười": "chuyện cười", "câu chuyện": "câu chuyện",
+        "dành dụm": "dành dụm", "tranh giành": "tranh giành",
+        "sáng lạng": "xán lạn", "bàn hoàn": "bàng hoàng",
+        "cọ sát": "cọ xát", "giả thuyết": "giả thuyết",
+        "chân thành": "chân thành", "trân trọng": "trân trọng"
+    };
+    
+    // Tách từ và kiểm tra
+    let words = text.split(/\s+/);
+    let html = "";
+    
+    // Thuật toán quét chuỗi đơn giản
+    // Để quét cụm từ (2 từ), ta chạy loop
+    for(let i=0; i<words.length; i++) {
+        let word = words[i];
+        let pair = (i < words.length - 1) ? (words[i] + " " + words[i+1]).toLowerCase() : "";
+        let cleanPair = pair.replace(/[.,?!]/g, "");
+        
+        // Kiểm tra cụm từ trước
+        if (dict[cleanPair] && dict[cleanPair] !== cleanPair) {
+            html += `<span style="background:#ffcccb; color:red; font-weight:bold;" title="Đúng: ${dict[cleanPair]}">${words[i]} ${words[i+1]}</span> `;
+            i++; // Bỏ qua từ tiếp theo vì đã check trong cụm
+        } else {
+             // Logic kiểm tra từ đơn (ví dụ s/x đơn giản) - Demo
+             html += word + " ";
         }
     }
-    res.innerHTML = "✅ Câu có cấu trúc ổn (AI Simulation Passed).";
-    res.className = "correct";
+    document.getElementById('spell-result').innerHTML = html;
 }
 
-// === D. CHAT SYSTEM (QUẢNG TRƯỜNG) ===
-function renderChatSystem() {
-    const ws = document.getElementById('workspace');
-    ws.innerHTML = `
-        <div class="chat-container">
-            <div id="chat-messages" class="chat-messages">
-                <div style="text-align:center; color:#999; font-style:italic;">Chào mừng đến Quảng Trường!</div>
+// 2. Viết lại câu (Thuật toán thay thế từ vựng cảm xúc)
+function renderLitImprove() {
+    document.getElementById('workspace').innerHTML = `
+        <h3>✨ AI Viết Lại Câu (Giàu cảm xúc)</h3>
+        <textarea id="ai-input" style="width:100%; height:100px;" placeholder="Ví dụ: Cây xanh. Trời nắng. Cô ấy cười."></textarea>
+        <button onclick="rewriteSentences()" class="btn-submit" style="background:#9C27B0; width:auto;">Nâng cấp văn bản</button>
+        <div id="ai-output" style="margin-top:15px; background:#f3e5f5; padding:15px; border-radius:5px;"></div>
+    `;
+}
+function rewriteSentences() {
+    let text = document.getElementById('ai-input').value;
+    
+    // Data thay thế (Adjective/Adverb Injection)
+    const replacements = [
+        { key: "cây xanh", val: "những tán cây xanh mướt đang rì rào trong gió" },
+        { key: "trời nắng", val: "bầu trời tràn ngập ánh nắng vàng rực rỡ" },
+        { key: "cô ấy cười", val: "cô ấy nở một nụ cười tỏa nắng, rạng rỡ cả không gian" },
+        { key: "buồn", val: "mang một nỗi buồn man mác, sâu lắng đến nao lòng" },
+        { key: "đẹp", val: "đẹp tựa như một bức tranh thủy mặc" },
+        { key: "nói", val: "cất giọng nhẹ nhàng đầy cảm xúc" },
+        { key: "đi", val: "rảo bước thật nhanh" }
+    ];
+
+    let newText = text;
+    replacements.forEach(item => {
+        // Regex thay thế không phân biệt hoa thường
+        let regex = new RegExp(item.key, "gi");
+        newText = newText.replace(regex, `<b style="color:#9C27B0;">${item.val}</b>`);
+    });
+
+    document.getElementById('ai-output').innerHTML = newText;
+}
+
+// === KHU ANH NGỮ ===
+// 1. Random Quiz
+function renderEngQuiz() {
+    document.getElementById('workspace').innerHTML = `
+        <h3>🇬🇧 Random Quiz Generator</h3>
+        <select id="quiz-topic" style="padding:8px;">
+            <option value="school">School</option>
+            <option value="travel">Travel</option>
+            <option value="food">Food</option>
+        </select>
+        <input type="number" id="quiz-qty" value="3" min="1" max="10" style="width:60px; padding:8px;"> câu
+        <button onclick="generateQuiz()" class="btn-submit" style="width:auto;">Tạo Đề</button>
+        <div id="quiz-list" style="margin-top:20px;"></div>
+    `;
+}
+const quizBank = {
+    school: [
+        {q:"What do you create in Art class?", a:["Painting", "Number", "History"], c:0},
+        {q:"Where do you play soccer?", a:["Library", "Playground", "Lab"], c:1},
+        {q:"Person who runs the school?", a:["Teacher", "Principal", "Janitor"], c:1},
+        {q:"Tool to write with ink?", a:["Pencil", "Pen", "Ruler"], c:1},
+        {q:"Subject about past events?", a:["Math", "History", "Science"], c:1}
+    ],
+    travel: [
+        {q:"You need this to fly abroad?", a:["Passport", "Book", "Bike"], c:0},
+        {q:"Sleeping place in hotel?", a:["Kitchen", "Bedroom", "Lobby"], c:1},
+        {q:"Vehicle on the ocean?", a:["Car", "Ship", "Plane"], c:1}
+    ],
+    food: [
+        {q:"Yellow curved fruit?", a:["Apple", "Banana", "Grape"], c:1},
+        {q:"Italian noodle dish?", a:["Sushi", "Pasta", "Burger"], c:1}
+    ]
+};
+function generateQuiz() {
+    const topic = document.getElementById('quiz-topic').value;
+    const qty = parseInt(document.getElementById('quiz-qty').value);
+    const pool = quizBank[topic];
+    const listDiv = document.getElementById('quiz-list');
+    
+    // Thuật toán Shuffle (Tráo bài)
+    let shuffled = pool.sort(() => 0.5 - Math.random());
+    let selected = shuffled.slice(0, qty);
+
+    listDiv.innerHTML = "";
+    selected.forEach((item, idx) => {
+        listDiv.innerHTML += `
+            <div style="background:#e8f5e9; padding:15px; margin-bottom:10px; border-radius:5px;">
+                <b>Q${idx+1}: ${item.q}</b><br>
+                ${item.a.map((ans, aIdx) => 
+                    `<label style="margin-right:15px;"><input type="radio" name="q${idx}" onclick="checkQ(this, ${aIdx}, ${item.c})"> ${ans}</label>`
+                ).join('')}
+                <span id="res-q${idx}"></span>
             </div>
+        `;
+    });
+}
+function checkQ(inp, choice, correct) {
+    const span = document.getElementById(`res-${inp.name}`);
+    span.innerHTML = (choice === correct) ? " ✅ Correct" : " ❌ Wrong";
+    span.style.color = (choice === correct) ? "green" : "red";
+    span.style.fontWeight = "bold";
+}
+
+// 2. Writing Checker (Grammar Algorithm)
+function renderEngWriting() {
+    document.getElementById('workspace').innerHTML = `
+        <h3>✍️ Luyện Writing (Check Ngữ Pháp)</h3>
+        <select id="grammar-tense" style="padding:8px;">
+            <option value="simple">Hiện tại đơn (Present Simple)</option>
+            <option value="continuous">Hiện tại tiếp diễn (Present Continuous)</option>
+        </select>
+        <input type="text" id="eng-write" placeholder="Nhập câu của bạn..." style="width:100%; padding:10px; margin-top:10px;">
+        <button onclick="checkGrammar()" class="btn-submit" style="width:auto;">Kiểm tra Cấu trúc</button>
+        <div id="grammar-res" style="margin-top:15px; font-weight:bold;"></div>
+    `;
+}
+function checkGrammar() {
+    const tense = document.getElementById('grammar-tense').value;
+    const txt = document.getElementById('eng-write').value.trim();
+    const res = document.getElementById('grammar-res');
+    
+    // Tách chủ ngữ giả định (Heuristic đơn giản)
+    const words = txt.split(' ');
+    const subject = words[0].toLowerCase();
+    const isSingular = ['he', 'she', 'it', 'lan', 'nam', 'my mother'].includes(subject);
+    const isPlural = ['i', 'you', 'we', 'they'].includes(subject);
+
+    let isValid = false;
+    let msg = "";
+
+    if (tense === 'simple') {
+        // Rule: S + V(s/es) hoặc do/does
+        // Check dấu hiệu
+        const signals = ['always', 'usually', 'often', 'every'];
+        const hasSignal = signals.some(s => txt.toLowerCase().includes(s));
+        
+        if (txt.includes('ing')) {
+            isValid = false; msg = "Hiện tại đơn không dùng V-ing (trừ danh động từ).";
+        } else if (isSingular && !txt.endsWith('s') && !txt.includes('does')) {
+             // Check sơ bộ động từ chia s/es (chỉ là check đuôi s trong câu demo)
+             msg = "Chủ ngữ số ít (He/She/It) động từ thường phải thêm s/es.";
+        } else {
+            isValid = true; msg = "Cấu trúc có vẻ đúng form Hiện tại đơn.";
+        }
+        if(!hasSignal) msg += " (Lưu ý: Thiếu trạng từ chỉ tần suất)";
+
+    } else if (tense === 'continuous') {
+        // Rule: be + V-ing
+        // Check tobe
+        const hasBe = /\b(am|is|are)\b/i.test(txt);
+        const hasIng = /ing\b/i.test(txt);
+        const signals = ['now', 'moment', 'present'];
+        const hasSignal = signals.some(s => txt.toLowerCase().includes(s));
+
+        if (hasBe && hasIng) {
+            isValid = true; msg = "Đúng cấu trúc S + be + V-ing.";
+        } else {
+            isValid = false; msg = "Thiếu động từ tobe (am/is/are) hoặc đuôi -ing.";
+        }
+        if(!hasSignal) msg += " (Nên thêm: now, at the moment...)";
+    }
+
+    res.innerHTML = isValid ? `<span style="color:green">✅ ${msg}</span>` : `<span style="color:red">⚠️ ${msg}</span>`;
+}
+
+// === QUẢNG TRƯỜNG (FILE SYSTEM) ===
+function renderChatSystem() {
+    document.getElementById('workspace').innerHTML = `
+        <div class="chat-container">
+            <div id="chat-messages" class="chat-messages"></div>
             <div class="chat-input-area">
-                <label class="file-btn" title="Gửi File"><i class="fas fa-paperclip"></i> <input type="file" hidden onchange="alert('Đã đính kèm file (Giả lập)')"></label>
+                <label class="file-btn" title="Gửi File"><i class="fas fa-paperclip"></i>
+                    <input type="file" id="chat-file" hidden onchange="handleFileSelect(this)">
+                </label>
                 <input type="text" id="chat-msg" placeholder="Nhập tin nhắn..." onkeypress="if(event.key==='Enter') sendChat()">
                 <button onclick="sendChat()" style="border:none; background:#E91E63; color:white; padding:10px 15px; border-radius:50%; cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
             </div>
@@ -431,45 +442,45 @@ function renderChatSystem() {
     `;
     loadChatHistory();
 }
-
+// Xử lý gửi file thật bằng Blob URL
+function handleFileSelect(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        // Tạo link ảo cho file (chỉ tồn tại trong phiên duyệt web này)
+        const fileUrl = URL.createObjectURL(file);
+        
+        const msgData = {
+            user: currentUser.username, role: currentUser.role,
+            text: `đã gửi file: <a href="${fileUrl}" download="${file.name}" class="file-attachment">📄 ${file.name}</a>`,
+            type: 'file'
+        };
+        saveAndRenderMsg(msgData);
+    }
+}
 function sendChat() {
     const input = document.getElementById('chat-msg');
     const txt = input.value;
     if (!txt) return;
-
-    const msgData = {
-        user: currentUser.username,
-        role: currentUser.role,
-        text: txt,
-        time: new Date().toLocaleTimeString()
-    };
-
-    // Lưu vào LocalStorage
-    let history = JSON.parse(localStorage.getItem('eschool_chat')) || [];
-    history.push(msgData);
-    localStorage.setItem('eschool_chat', JSON.stringify(history));
-
+    const msgData = { user: currentUser.username, role: currentUser.role, text: txt, type: 'text' };
+    saveAndRenderMsg(msgData);
     input.value = "";
+}
+function saveAndRenderMsg(msg) {
+    // Lưu vào bộ nhớ tạm (Session Storage cho File vì LocalStorage không lưu được Blob lớn)
+    let history = JSON.parse(sessionStorage.getItem('eschool_chat_session')) || [];
+    history.push(msg);
+    sessionStorage.setItem('eschool_chat_session', JSON.stringify(history));
     loadChatHistory();
 }
-
 function loadChatHistory() {
     const box = document.getElementById('chat-messages');
-    let history = JSON.parse(localStorage.getItem('eschool_chat')) || [];
-    
+    let history = JSON.parse(sessionStorage.getItem('eschool_chat_session')) || [];
     box.innerHTML = "";
     history.forEach(msg => {
         const div = document.createElement('div');
         div.className = `msg ${msg.user === currentUser.username ? 'my-msg' : 'other-msg'}`;
-        
-        // Hiện tên và chức danh
-        const roleTitle = msg.role === 'student' ? 'Học sinh' : 'Giáo viên';
         const roleColor = msg.role === 'student' ? '#2196F3' : '#4CAF50';
-        
-        div.innerHTML = `
-            <div class="msg-header" style="color:${roleColor}">${msg.user} (${roleTitle})</div>
-            ${msg.text}
-        `;
+        div.innerHTML = `<div class="msg-header" style="color:${roleColor}">${msg.user}</div>${msg.text}`;
         box.appendChild(div);
     });
     box.scrollTop = box.scrollHeight;

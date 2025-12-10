@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thị Trấn eSchool - Bản Nâng Cấp</title>
+    <title>Thị Trấn eSchool - Advanced</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/function-plot/dist/function-plot.js"></script>
@@ -13,18 +13,15 @@
     <div id="auth-overlay" class="overlay">
         <div class="auth-box">
             <h2 style="color: #4CAF50;">🔐 Cổng vào Thị Trấn</h2>
-            
             <div class="auth-tabs">
                 <button onclick="switchAuthMode('login')" id="tab-login" class="active">Đăng Nhập</button>
                 <button onclick="switchAuthMode('register')" id="tab-register">Đăng Ký</button>
             </div>
-
             <div id="form-login">
                 <input type="text" id="login-username" placeholder="Tên đăng nhập">
                 <input type="password" id="login-password" placeholder="Mật khẩu">
                 <button onclick="handleLogin()" class="btn-submit">Vào Thị Trấn</button>
             </div>
-
             <div id="form-register" class="hidden">
                 <p>Bạn là ai?</p>
                 <div class="role-select">
@@ -36,7 +33,6 @@
                 <input type="email" id="reg-email" placeholder="Email (Bắt buộc cho GV)" class="hidden">
                 <button onclick="handleRegister()" class="btn-submit" style="background: #FF9800;">Tạo Tài Khoản</button>
             </div>
-            <p id="auth-msg"></p>
         </div>
     </div>
 
@@ -44,12 +40,12 @@
         <header>
             <div class="logo">🏘️ Thị Trấn eSchool</div>
             <div class="user-panel">
-                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="user-avatar" alt="Avatar">
+                <img src="" id="user-avatar" alt="Avatar">
                 <div class="user-details">
                     <span id="display-name">Guest</span>
                     <span id="user-badge" class="badge">Role</span>
                 </div>
-                <button onclick="logout()" class="btn-logout"><i class="fas fa-sign-out-alt"></i></button>
+                <button onclick="logout()" class="btn-logout" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></button>
             </div>
         </header>
 
@@ -66,7 +62,7 @@
                     <i class="fas fa-language"></i> <h3>English Spot</h3> <p>Khu Anh Ngữ</p>
                 </div>
                 <div class="zone square" onclick="enterZone('square')">
-                    <i class="fas fa-comments"></i> <h3>Academic Square</h3> <p>Quảng Trường (Chat)</p>
+                    <i class="fas fa-comments"></i> <h3>Academic Square</h3> <p>Quảng Trường</p>
                 </div>
             </div>
         </main>
@@ -76,11 +72,8 @@
                 <button onclick="goBack()" class="btn-back">⬅ Trở về</button>
                 <h2 id="zone-title">Tiêu đề</h2>
             </div>
-            
             <div id="sub-menu" class="sub-menu-bar"></div>
-
-            <div id="workspace" class="workspace-box">
-                </div>
+            <div id="workspace" class="workspace-box"></div>
         </section>
     </div>
 
